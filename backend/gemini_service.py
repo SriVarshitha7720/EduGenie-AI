@@ -23,9 +23,9 @@ genai.configure(api_key=GEMINI_API_KEY, transport="rest")
 
 # Primary and Fallback Gemini Models
 FALLBACK_MODELS = [
-    "gemini-3.6-flash",
+    "gemini-3.5-flash-lite",
     "gemini-3.5-flash",
-    "gemini-2.5-flash-lite",
+    "gemini-3.6-flash",
     "gemini-flash-latest"
 ]
 
