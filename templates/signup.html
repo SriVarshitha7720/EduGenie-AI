@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>✨ Create Your Account</h1>
+    <p>Join EduGenie AI to save your progress, roadmaps, and quiz history.</p>
+</div>
+
+<div class="auth-container">
+    <form id="signupForm" onsubmit="handleSignup(event)">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" required placeholder="Choose a username">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" required placeholder="name@example.com">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" required placeholder="Create password (min 4 chars)">
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" required placeholder="Re-enter password">
+        </div>
+
+        <div id="authAlert" class="auth-alert" style="display: none;"></div>
+
+        <button type="submit" class="primary-btn" style="width: 100%;">
+            🚀 Register Account
+        </button>
+
+        <p class="auth-footer-text">
+            Already have an account? <a href="/login-page">Login here</a>
+        </p>
+    </form>
+</div>
+
+<script>
+async function handleSignup(e) {
+    e.preventDefault();
+    const alertBox = document.getElementById("authAlert");
+    alertBox.style.display = "none";
+
+    const username = document.getElementById("username").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (password !== confirmPassword) {
+        alertBox.className = "auth-alert error";
+        alertBox.innerText = "Passwords do not match.";
+        alertBox.style.display = "block";
+        return;
+    }
+
+    try {
+        const response = await fetch("/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            alertBox.className = "auth-alert success";
+            alertBox.innerText = "Account created successfully! Redirecting to login...";
+            alertBox.style.display = "block";
+            setTimeout(() => {
+                window.location.href = "/login-page";
+            }, 1000);
+        } else {
+            alertBox.className = "auth-alert error";
+            alertBox.innerText = data.detail || "Registration failed.";
+            alertBox.style.display = "block";
+        }
+    } catch (err) {
+        alertBox.className = "auth-alert error";
+        alertBox.innerText = "Connection error. Please try again.";
+        alertBox.style.display = "block";
+    }
+}
+</script>
+
+{% endblock %}

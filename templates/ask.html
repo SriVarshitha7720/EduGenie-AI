@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>🤖 Ask EduGenie AI</h1>
+    <p>Ask any educational question and get instant AI-powered answers.</p>
+</div>
+
+<div class="chat-container">
+
+    <div class="chat-box" id="chatBox">
+
+        <div class="ai-message">
+            👋 Hello! I'm <b>EduGenie AI</b>.<br><br>
+            Ask me anything about programming, mathematics, science,
+            engineering, interview preparation, or any academic topic.
+        </div>
+
+    </div>
+
+    <div class="chat-input">
+
+        <textarea
+            id="question"
+            placeholder="Type your question here..."
+        ></textarea>
+
+        <button onclick="askAI()">
+            🚀 Ask AI
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+async function askAI(){
+
+    let question=document.getElementById("question").value;
+
+    if(question.trim()==""){
+        alert("Please enter a question.");
+        return;
+    }
+
+    let chat=document.getElementById("chatBox");
+
+    chat.innerHTML += `
+        <div class="user-message">
+            ${question}
+        </div>
+    `;
+
+    document.getElementById("question").value="";
+
+    chat.innerHTML += `
+        <div class="loading" id="loading">
+            🤖 Thinking...
+        </div>
+    `;
+
+    chat.scrollTop=chat.scrollHeight;
+
+    let response=await fetch("/ask",{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+            question:question
+        })
+
+    });
+
+    let data=await response.json();
+
+    document.getElementById("loading").remove();
+
+    let formattedAnswer = renderMarkdown(data.answer);
+
+    chat.innerHTML += `
+        <div class="ai-message">
+            ${formattedAnswer}
+        </div>
+    `;
+
+    chat.scrollTop=chat.scrollHeight;
+
+    /* Save History */
+
+    let history=JSON.parse(localStorage.getItem("history")) || [];
+
+    history.push({
+        question:question,
+        answer:data.answer,
+        time:new Date().toLocaleString()
+    });
+
+    localStorage.setItem("history",JSON.stringify(history));
+console.log(localStorage.getItem("history"));
+}
+
+</script>
+
+{% endblock %}

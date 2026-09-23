@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>🔑 Login to EduGenie AI</h1>
+    <p>Access your personalized dashboard, chat history, and study tools.</p>
+</div>
+
+<div class="auth-container">
+    <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+            <label for="username">Username or Email</label>
+            <input type="text" id="username" required placeholder="Enter username or email">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" required placeholder="Enter password">
+        </div>
+
+        <div id="authAlert" class="auth-alert" style="display: none;"></div>
+
+        <button type="submit" class="primary-btn" style="width: 100%;">
+            🔑 Login
+        </button>
+
+        <p class="auth-footer-text">
+            Don't have an account? <a href="/signup-page">Sign Up here</a>
+        </p>
+    </form>
+</div>
+
+<script>
+async function handleLogin(e) {
+    e.preventDefault();
+    const alertBox = document.getElementById("authAlert");
+    alertBox.style.display = "none";
+
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    try {
+        const response = await fetch("/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            alertBox.className = "auth-alert success";
+            alertBox.innerText = "Login successful! Redirecting...";
+            alertBox.style.display = "block";
+            setTimeout(() => {
+                window.location.href = "/dashboard";
+            }, 800);
+        } else {
+            alertBox.className = "auth-alert error";
+            alertBox.innerText = data.detail || "Invalid login credentials.";
+            alertBox.style.display = "block";
+        }
+    } catch (err) {
+        alertBox.className = "auth-alert error";
+        alertBox.innerText = "Connection error. Please try again.";
+        alertBox.style.display = "block";
+    }
+}
+</script>
+
+{% endblock %}

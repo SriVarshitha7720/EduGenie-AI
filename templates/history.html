@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>🕒 Chat History</h1>
+    <p>Your previous conversations with EduGenie AI (Saved in Database).</p>
+</div>
+
+<div class="history-container">
+
+    <button class="clear-btn" onclick="clearHistory()">
+        🗑 Clear History
+    </button>
+
+    <div id="historyList">
+        <div class="card" style="text-align: center;">⏳ Loading history...</div>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", loadHistory);
+
+async function loadHistory() {
+    const container = document.getElementById("historyList");
+    try {
+        const response = await fetch("/chat-history");
+        const data = await response.json();
+        const history = data.history || [];
+
+        if (history.length === 0) {
+            container.innerHTML = `
+            <div class="card" style="text-align: center;">
+                <h3>No Chat History Found</h3>
+                <p style="margin-top: 10px;">Start asking questions to EduGenie AI to build your history.</p>
+            </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = "";
+        history.forEach(chat => {
+            container.innerHTML += `
+            <div class="history-card">
+                <h3>❓ ${chat.question}</h3>
+                <div>${renderMarkdown(chat.answer)}</div>
+                <small style="display:block; margin-top:10px;">${chat.time}</small>
+            </div>
+            `;
+        });
+    } catch (err) {
+        container.innerHTML = `
+        <div class="card error" style="text-align: center;">
+            <p>Error loading chat history. Please refresh the page.</p>
+        </div>
+        `;
+    }
+}
+
+async function clearHistory() {
+    if (!confirm("Are you sure you want to clear your chat history?")) return;
+    try {
+        await fetch("/clear-chat-history", { method: "POST" });
+        loadHistory();
+    } catch (err) {
+        alert("Could not clear history.");
+    }
+}
+</script>
+
+{% endblock %}

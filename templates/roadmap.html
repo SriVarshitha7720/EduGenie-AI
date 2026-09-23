@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>🗺️ AI Learning Roadmap</h1>
+    <p>Generate a personalized roadmap for any technology or subject.</p>
+</div>
+
+<div class="roadmap-container">
+
+    <input
+        type="text"
+        id="roadmapTopic"
+        placeholder="Enter Topic (Example: Python, AI, Java, DBMS)"
+    >
+
+    <button onclick="generateRoadmap()">
+        🚀 Generate Roadmap
+    </button>
+
+</div>
+
+<div class="result-box" id="roadmapResult"></div>
+
+<script>
+
+async function generateRoadmap(){
+
+    let topic=document.getElementById("roadmapTopic").value;
+
+    if(topic==""){
+
+        alert("Please enter a topic.");
+
+        return;
+
+    }
+
+    document.getElementById("roadmapResult").innerHTML="⏳ Generating Roadmap...";
+
+    let response=await fetch("/roadmap",{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+
+            topic:topic
+
+        })
+
+    });
+
+    let data=await response.json();
+
+    document.getElementById("roadmapResult").innerHTML=
+    renderMarkdown(data.roadmap);
+
+    let count=Number(localStorage.getItem("roadmapCount")) || 0;
+
+    localStorage.setItem("roadmapCount",count+1);
+
+}
+
+</script>
+
+{% endblock %}

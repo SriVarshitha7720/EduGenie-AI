@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>📝 AI Quiz Generator</h1>
+    <p>Create quizzes on any topic instantly & test your knowledge step-by-step.</p>
+</div>
+
+<!-- Setup Form -->
+<div class="quiz-container" id="quizSetup">
+    <div class="form-group">
+        <label for="topic">Quiz Topic</label>
+        <input type="text" id="topic" placeholder="e.g. Python Programming, World History, Organic Chemistry">
+    </div>
+
+    <div class="form-group">
+        <label for="difficulty">Difficulty Level</label>
+        <select id="difficulty">
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="questions">Number of Questions</label>
+        <input type="number" id="questions" value="5" min="1" max="20">
+    </div>
+
+    <button class="primary-btn" onclick="generateQuiz()">
+        🚀 Generate Quiz
+    </button>
+</div>
+
+<!-- Loading Box -->
+<div class="result-box" id="quizLoading" style="display: none; text-align: center;">
+    <h3>⏳ Generating your custom quiz...</h3>
+    <p style="margin-top: 10px;">Please wait while EduGenie AI crafts your questions.</p>
+</div>
+
+<!-- Interactive Quiz Player -->
+<div class="quiz-player-card" id="quizPlayer" style="display: none;">
+    <div class="quiz-header">
+        <span class="quiz-progress-text" id="quizProgressText">Question 1 of 5</span>
+        <span class="quiz-score-live" id="quizScoreLive">Score: 0</span>
+    </div>
+
+    <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressBarFill"></div>
+    </div>
+
+    <div class="question-box">
+        <h3 id="questionTitle">Question Text Here</h3>
+        <div class="options-list" id="optionsList">
+            <!-- Options dynamically inserted here -->
+        </div>
+    </div>
+
+    <div class="feedback-box" id="feedbackBox" style="display: none;">
+        <p id="feedbackText"></p>
+    </div>
+
+    <div class="quiz-footer">
+        <button class="next-btn" id="nextBtn" onclick="nextQuestion()" style="display: none;">
+            Next Question ➡️
+        </button>
+    </div>
+</div>
+
+<!-- Final Results Card -->
+<div class="result-box" id="quizSummary" style="display: none; text-align: center;">
+    <h2 id="summaryTitle">🎉 Quiz Completed!</h2>
+    <div class="final-score-circle" id="finalScoreCircle">0 / 0</div>
+    <p id="summaryMessage" style="font-size: 18px; margin: 15px 0;"></p>
+
+    <button class="primary-btn" onclick="resetQuiz()" style="margin-top: 20px;">
+        🔄 Try Another Quiz
+    </button>
+</div>
+
+<script>
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let selectedOption = null;
+
+async function generateQuiz(){
+    let topic = document.getElementById("topic").value;
+    let difficulty = document.getElementById("difficulty").value;
+    let questions = document.getElementById("questions").value;
+
+    if(topic.trim() === ""){
+        alert("Please enter a topic.");
+        return;
+    }
+
+    document.getElementById("quizSetup").style.display = "none";
+    document.getElementById("quizLoading").style.display = "block";
+    document.getElementById("quizPlayer").style.display = "none";
+    document.getElementById("quizSummary").style.display = "none";
+
+    try {
+        const response = await fetch("/quiz", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                topic: topic,
+                difficulty: difficulty,
+                num_questions: Number(questions)
+            })
+        });
+
+        const data = await response.json();
+        document.getElementById("quizLoading").style.display = "none";
+
+        if(Array.isArray(data.quiz) && data.quiz.length > 0){
+            currentQuestions = data.quiz;
+            currentIndex = 0;
+            score = 0;
+            document.getElementById("quizPlayer").style.display = "block";
+            showQuestion();
+        } else {
+            // Fallback for raw text format
+            document.getElementById("quizSummary").style.display = "block";
+            document.getElementById("quizSummary").innerHTML = `
+                <h3>Quiz Results</h3>
+                <pre style="text-align: left; white-space: pre-wrap; margin-top: 15px;">${data.quiz}</pre>
+                <button class="primary-btn" onclick="resetQuiz()" style="margin-top: 20px;">🔄 Try Another Quiz</button>
+            `;
+        }
+
+        let quizCount = Number(localStorage.getItem("quizCount")) || 0;
+        localStorage.setItem("quizCount", quizCount + 1);
+
+    } catch (err) {
+        document.getElementById("quizLoading").style.display = "none";
+        document.getElementById("quizSetup").style.display = "block";
+        alert("Error generating quiz. Please try again.");
+    }
+}
+
+function showQuestion(){
+    const q = currentQuestions[currentIndex];
+    selectedOption = null;
+
+    document.getElementById("quizProgressText").innerText = `Question ${currentIndex + 1} of ${currentQuestions.length}`;
+    document.getElementById("quizScoreLive").innerText = `Score: ${score}`;
+    
+    let progressPercent = ((currentIndex) / currentQuestions.length) * 100;
+    document.getElementById("progressBarFill").style.width = `${progressPercent}%`;
+
+    document.getElementById("questionTitle").innerText = `${currentIndex + 1}. ${q.question}`;
+    
+    const optionsContainer = document.getElementById("optionsList");
+    optionsContainer.innerHTML = "";
+
+    document.getElementById("feedbackBox").style.display = "none";
+    document.getElementById("nextBtn").style.display = "none";
+
+    q.options.forEach((optText, i) => {
+        let letter = "A";
+        if (optText.startsWith("A)") || optText.startsWith("A.")) letter = "A";
+        else if (optText.startsWith("B)") || optText.startsWith("B.")) letter = "B";
+        else if (optText.startsWith("C)") || optText.startsWith("C.")) letter = "C";
+        else if (optText.startsWith("D)") || optText.startsWith("D.")) letter = "D";
+        else letter = String.fromCharCode(65 + i);
+
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.innerHTML = `<span class="option-letter">${letter}</span> <span class="option-text">${optText.replace(/^[A-D][\.\)]\s*/, "")}</span>`;
+        btn.onclick = () => selectOption(letter, btn, q);
+        optionsContainer.appendChild(btn);
+    });
+}
+
+function selectOption(letter, clickedBtn, questionObj){
+    if (selectedOption !== null) return;
+    selectedOption = letter;
+
+    const allButtons = document.querySelectorAll(".option-btn");
+    allButtons.forEach(btn => btn.disabled = true);
+
+    const correctAnsLetter = questionObj.answer.trim().charAt(0).toUpperCase();
+    const isCorrect = (letter.toUpperCase() === correctAnsLetter);
+
+    if(isCorrect){
+        score++;
+        clickedBtn.classList.add("correct");
+        document.getElementById("feedbackBox").className = "feedback-box success";
+        document.getElementById("feedbackText").innerHTML = `<b>Correct! 🎉</b> ${questionObj.explanation || ""}`;
+    } else {
+        clickedBtn.classList.add("incorrect");
+        allButtons.forEach(btn => {
+            const l = btn.querySelector(".option-letter").innerText;
+            if (l.toUpperCase() === correctAnsLetter) {
+                btn.classList.add("correct");
+            }
+        });
+        document.getElementById("feedbackBox").className = "feedback-box error";
+        document.getElementById("feedbackText").innerHTML = `<b>Incorrect ❌</b> Correct Answer: <b>${correctAnsLetter}</b>.<br>${questionObj.explanation || ""}`;
+    }
+
+    document.getElementById("quizScoreLive").innerText = `Score: ${score}`;
+    document.getElementById("feedbackBox").style.display = "block";
+    
+    const nextBtn = document.getElementById("nextBtn");
+    if(currentIndex < currentQuestions.length - 1){
+        nextBtn.innerText = "Next Question ➡️";
+    } else {
+        nextBtn.innerText = "Finish Quiz 🏆";
+    }
+    nextBtn.style.display = "inline-block";
+}
+
+function nextQuestion(){
+    currentIndex++;
+    if(currentIndex < currentQuestions.length){
+        showQuestion();
+    } else {
+        showSummary();
+    }
+}
+
+function showSummary(){
+    document.getElementById("quizPlayer").style.display = "none";
+    document.getElementById("quizSummary").style.display = "block";
+
+    const total = currentQuestions.length;
+    const percentage = Math.round((score / total) * 100);
+
+    document.getElementById("finalScoreCircle").innerText = `${score} / ${total} (${percentage}%)`;
+
+    let msg = "";
+    if(percentage === 100){
+        msg = "🌟 Perfect Score! Excellent mastery of this topic!";
+    } else if(percentage >= 70){
+        msg = "👍 Great Job! You have a solid understanding!";
+    } else if(percentage >= 50){
+        msg = "📘 Good Effort! Keep practicing to improve your score!";
+    } else {
+        msg = "💪 Keep Learning! Review the topic and try again!";
+    }
+
+    document.getElementById("summaryMessage").innerText = msg;
+}
+
+function resetQuiz(){
+    document.getElementById("quizSummary").style.display = "none";
+    document.getElementById("quizPlayer").style.display = "none";
+    document.getElementById("quizSetup").style.display = "block";
+}
+</script>
+
+{% endblock %}

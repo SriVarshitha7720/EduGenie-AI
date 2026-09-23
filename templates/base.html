@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EduGenie AI</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<header>
+
+    <div class="logo">
+        🎓 EduGenie AI
+    </div>
+
+    <nav>
+
+        <a href="/">Home</a>
+
+        <a href="/dashboard">Dashboard</a>
+
+        <a href="/ask-page">Ask AI</a>
+
+        <a href="/quiz-page">Quiz</a>
+
+        <a href="/summary-page">Summary</a>
+
+        <a href="/roadmap-page">Roadmap</a>
+
+        <a href="/history">History</a>
+
+        {% if current_user %}
+            <span class="user-badge">👤 {{ current_user.username }}</span>
+            <a href="/logout" style="color: #ef4444; font-weight: 600;">🚪 Logout</a>
+        {% else %}
+            <a href="/login-page">🔑 Login</a>
+            <a href="/signup-page">✨ Sign Up</a>
+        {% endif %}
+
+    </nav>
+
+    <button id="themeToggle">
+    🌙
+</button>
+
+</header>
+
+<main>
+
+    {% block content %}
+    {% endblock %}
+
+</main>
+<footer>
+
+    <div class="footer-content">
+
+        <h3>🎓 EduGenie AI</h3>
+
+        <p>AI Powered Educational Assistant</p>
+
+         <p>
+            B.Tech Mini Project • 2026
+        </p>
+
+    </div>
+
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="/static/script.js"></script>
+<script src="/static/theme.js"></script>
+
+</body>
+</html>

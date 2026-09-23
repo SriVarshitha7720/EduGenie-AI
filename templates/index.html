@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="hero">
+
+    <h1>Welcome to EduGenie AI 🚀</h1>
+
+    <p>
+        Your personal AI-powered educational assistant.
+        Ask questions, generate quizzes, summarize notes,
+        create learning roadmaps, and track your learning journey
+        all in one place.
+    </p>
+
+    <div class="hero-buttons">
+
+        <a href="/ask-page" class="btn btn-primary">
+            🤖 Start Asking AI
+        </a>
+
+        <a href="/dashboard" class="btn btn-secondary">
+            📊 Open Dashboard
+        </a>
+
+    </div>
+
+</section>
+
+<div class="feature-grid">
+
+    <a href="/ask-page" style="text-decoration:none;color:inherit;">
+
+        <div class="feature-card">
+
+            <div class="feature-icon">🤖</div>
+
+            <h2>Ask AI</h2>
+
+            <p>
+                Ask any academic question and receive instant
+                AI-powered answers using Google Gemini.
+            </p>
+
+        </div>
+
+    </a>
+
+    <a href="/quiz-page" style="text-decoration:none;color:inherit;">
+
+        <div class="feature-card">
+
+            <div class="feature-icon">📝</div>
+
+            <h2>Quiz Generator</h2>
+
+            <p>
+                Generate MCQ quizzes on any topic with
+                customizable difficulty levels.
+            </p>
+
+        </div>
+
+    </a>
+
+    <a href="/summary-page" style="text-decoration:none;color:inherit;">
+
+        <div class="feature-card">
+
+            <div class="feature-icon">📄</div>
+
+            <h2>Text Summarizer</h2>
+
+            <p>
+                Convert lengthy notes into concise,
+                easy-to-read summaries.
+            </p>
+
+        </div>
+
+    </a>
+
+    <a href="/roadmap-page" style="text-decoration:none;color:inherit;">
+
+        <div class="feature-card">
+
+            <div class="feature-icon">🗺️</div>
+
+            <h2>Learning Roadmap</h2>
+
+            <p>
+                Get a step-by-step roadmap to master
+                any technology or subject.
+            </p>
+
+        </div>
+
+    </a>
+
+    <a href="/history" style="text-decoration:none;color:inherit;">
+
+        <div class="feature-card">
+
+            <div class="feature-icon">🕒</div>
+
+            <h2>Chat History</h2>
+
+            <p>
+                View your previous AI conversations
+                anytime.
+            </p>
+
+        </div>
+
+    </a>
+
+    <a href="/dashboard" style="text-decoration:none;color:inherit;">
+
+        <div class="feature-card">
+
+            <div class="feature-icon">📊</div>
+
+            <h2>Dashboard</h2>
+
+            <p>
+                Monitor your learning progress,
+                usage statistics, and recent activity.
+            </p>
+
+        </div>
+
+    </a>
+
+</div>
+
+<footer>
+
+    <p>
+        © 2026 EduGenie AI • Powered by FastAPI & Google Gemini
+    </p>
+
+</footer>
+
+{% endblock %}

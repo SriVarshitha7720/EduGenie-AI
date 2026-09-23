@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>📊 Dashboard</h1>
+    <p>
+        {% if current_user %}
+            Welcome back, <strong>{{ current_user.username }}</strong>! Here is your personal learning activity.
+        {% else %}
+            Welcome! Login to track your personal learning statistics.
+        {% endif %}
+    </p>
+</div>
+
+<div class="dashboard-container">
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <h2 id="questionCount">0</h2>
+            <h3>Questions Asked</h3>
+        </div>
+
+        <div class="stat-card">
+            <h2 id="quizCount">0</h2>
+            <h3>Quizzes Generated</h3>
+        </div>
+
+        <div class="stat-card">
+            <h2 id="summaryCount">0</h2>
+            <h3>Summaries Created</h3>
+        </div>
+
+        <div class="stat-card">
+            <h2 id="roadmapCount">0</h2>
+            <h3>Roadmaps Generated</h3>
+        </div>
+
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="recent-card">
+
+        <h2>📈 Recent Activity</h2>
+
+        <div id="recentActivity">
+            <p>Loading activity...</p>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", loadDashboard);
+
+async function loadDashboard() {
+    try {
+        const statsResp = await fetch("/stats");
+        const stats = await statsResp.json();
+
+        document.getElementById("questionCount").innerText = stats.questions || 0;
+        document.getElementById("quizCount").innerText = stats.quiz || 0;
+        document.getElementById("summaryCount").innerText = stats.summary || 0;
+        document.getElementById("roadmapCount").innerText = stats.roadmap || 0;
+
+        const historyResp = await fetch("/chat-history");
+        const historyData = await historyResp.json();
+        const history = historyData.history || [];
+
+        const recent = document.getElementById("recentActivity");
+
+        if (history.length === 0) {
+            recent.innerHTML = `<p>No recent activity yet. Start asking questions!</p>`;
+        } else {
+            recent.innerHTML = "";
+            history.slice(0, 5).forEach(chat => {
+                recent.innerHTML += `
+                    <div class="activity-item">
+                        <strong>• ${chat.question}</strong><br>
+                        <small>${chat.time}</small>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid var(--border);">
+                    </div>
+                `;
+            });
+        }
+
+    } catch (err) {
+        console.error("Dashboard error:", err);
+    }
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>📄 AI Text Summarizer</h1>
+    <p>Paste your notes or upload a PDF to generate a concise summary.</p>
+</div>
+
+<div class="summary-container">
+
+    <textarea
+        id="summaryText"
+        placeholder="Paste your notes here..."
+        rows="12">
+    </textarea>
+
+    <button onclick="summarizeText()">
+        ✨ Summarize Text
+    </button>
+
+    <hr>
+
+    <h3>OR Upload PDF</h3>
+
+    <input type="file" id="pdfFile">
+
+    <button onclick="uploadPDF()">
+        📄 Upload & Summarize
+    </button>
+
+</div>
+
+<div class="result-box" id="summaryResult"></div>
+
+<script>
+
+async function summarizeText(){
+
+    let text=document.getElementById("summaryText").value;
+
+    if(text==""){
+
+        alert("Please enter some text.");
+
+        return;
+
+    }
+
+    document.getElementById("summaryResult").innerHTML="⏳ Generating Summary...";
+
+    let response=await fetch("/summary",{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+
+            text:text
+
+        })
+
+    });
+
+    let data=await response.json();
+
+    document.getElementById("summaryResult").innerHTML=
+    renderMarkdown(data.summary);
+
+    let count=Number(localStorage.getItem("summaryCount")) || 0;
+
+    localStorage.setItem("summaryCount",count+1);
+
+}
+
+async function uploadPDF(){
+
+    let file=document.getElementById("pdfFile").files[0];
+
+    if(!file){
+
+        alert("Choose a PDF first.");
+
+        return;
+
+    }
+
+    let formData=new FormData();
+
+    formData.append("file",file);
+
+    document.getElementById("summaryResult").innerHTML="⏳ Reading PDF...";
+
+    let response=await fetch("/upload-pdf",{
+
+        method:"POST",
+
+        body:formData
+
+    });
+
+    let data=await response.json();
+
+    document.getElementById("summaryResult").innerHTML=
+    renderMarkdown(data.summary);
+
+    let count=Number(localStorage.getItem("summaryCount")) || 0;
+
+    localStorage.setItem("summaryCount",count+1);
+
+}
+
+</script>
+
+{% endblock %}
